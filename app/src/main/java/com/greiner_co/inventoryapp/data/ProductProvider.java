@@ -118,7 +118,7 @@ public class ProductProvider extends ContentProvider {
         // Check for valid price
         priceIsValid(contentValues);
         // Check for valid amount
-        amountIsValid(contentValues);
+        quantityIsValid(contentValues);
         // Check for valid supplier
         supplierIsValid(contentValues);
         // Check for valid image name
@@ -139,8 +139,8 @@ public class ProductProvider extends ContentProvider {
         }
     }
 
-    private void amountIsValid(ContentValues contentValues) {
-        Integer amount = contentValues.getAsInteger(ProductEntry.COLUMN_PRODUCT_AMOUNT);
+    private void quantityIsValid(ContentValues contentValues) {
+        Integer amount = contentValues.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
         if (amount == null || amount < 0) {
             throw new IllegalArgumentException("Product requires a non-negative amount in stock");
         }
@@ -199,8 +199,8 @@ public class ProductProvider extends ContentProvider {
             priceIsValid(contentValues);
         }
 
-        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_AMOUNT)) {
-            amountIsValid(contentValues);
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_QUANTITY)) {
+            quantityIsValid(contentValues);
         }
 
         if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER)) {
@@ -213,7 +213,20 @@ public class ProductProvider extends ContentProvider {
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
-        int numberOfRows = database.update(ProductEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+        int numberOfRows = 0;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PRODUCTS:
+                numberOfRows = database.update(ProductEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+                break;
+            case PRODUCT_ID:
+                selection = ProductEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                numberOfRows = database.update(ProductEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Update not supported for " + uri);
+        }
 
         if (numberOfRows > 0) {
             if (getContext() != null) {

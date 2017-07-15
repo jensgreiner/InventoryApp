@@ -54,6 +54,7 @@ public class InventoryActivity extends AppCompatActivity implements LoaderManage
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(InventoryActivity.this, EditorActivity.class);
                 Uri uri = ContentUris.withAppendedId(ProductEntry.CONTENT_URI, id);
+                Log.v(LOG_TAG, "Item ID " + id);
                 intent.setData(uri);
                 startActivity(intent);
             }
@@ -86,7 +87,7 @@ public class InventoryActivity extends AppCompatActivity implements LoaderManage
 
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, "Cola");
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, 0.99F);
-        values.put(ProductEntry.COLUMN_PRODUCT_AMOUNT, 10);
+        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, 10);
         values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER, "Coca Cola Inc.");
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, "default_image");
 
@@ -108,7 +109,7 @@ public class InventoryActivity extends AppCompatActivity implements LoaderManage
                 ProductEntry._ID,
                 ProductEntry.COLUMN_PRODUCT_NAME,
                 ProductEntry.COLUMN_PRODUCT_PRICE,
-                ProductEntry.COLUMN_PRODUCT_AMOUNT
+                ProductEntry.COLUMN_PRODUCT_QUANTITY
         };
         return new CursorLoader(this, ProductEntry.CONTENT_URI, projection, null, null, null);
     }

@@ -43,8 +43,8 @@ public final class ProductContract {
         // Price of the single product (type: REAL, NOT NULL)
         public static final String COLUMN_PRODUCT_PRICE = "price";
 
-        // Amount of the product to be available (type: INTEGER, NOT NULL, DEFAULT 0)
-        public static final String COLUMN_PRODUCT_AMOUNT = "amount";
+        // Quantity of the product to be available (type: INTEGER, NOT NULL, DEFAULT 0)
+        public static final String COLUMN_PRODUCT_QUANTITY = "quantity";
 
         // Supplier of the product (type: TEXT, NOT NULL)
         public static final String COLUMN_PRODUCT_SUPPLIER = "supplier";

@@ -4,4 +4,7 @@
     <string name="empty_title_text">Nothing to sell here.</string>
     <string name="action_insert_dummy_data">Insert Dummy Data</string>
     <string name="action_delete_all_products">Delete All Products</string>
+    <string name="button_sale_title">Sale</string>
+    <string name="price_label">Price:</string>
+    <string name="toast_product_sold">No product left for sale.</string>
 </resources>
