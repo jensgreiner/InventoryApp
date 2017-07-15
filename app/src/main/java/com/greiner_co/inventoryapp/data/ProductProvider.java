@@ -25,9 +25,12 @@ public class ProductProvider extends ContentProvider {
         sUriMatcher.addURI(ProductContract.CONTENT_AUTHORITY, ProductContract.PATH_PRODUCTS + "/#", PRODUCT_ID);
     }
 
+    private ProductDbHelper mDbHelper;
+
     @Override
     public boolean onCreate() {
-        return false;
+        mDbHelper = new ProductDbHelper(getContext());
+        return true;
     }
 
     @Nullable
