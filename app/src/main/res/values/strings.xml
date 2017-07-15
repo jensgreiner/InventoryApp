@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Inventory App</string>
+    <string name="empty_subtitle_text">Add more products to the list...</string>
+    <string name="empty_title_text">Nothing to sell here.</string>
 </resources>
