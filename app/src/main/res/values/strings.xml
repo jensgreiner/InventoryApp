@@ -2,4 +2,6 @@
     <string name="app_name">Inventory App</string>
     <string name="empty_subtitle_text">Add more products to the list...</string>
     <string name="empty_title_text">Nothing to sell here.</string>
+    <string name="action_insert_dummy_data">Insert Dummy Data</string>
+    <string name="action_delete_all_products">Delete All Products</string>
 </resources>
