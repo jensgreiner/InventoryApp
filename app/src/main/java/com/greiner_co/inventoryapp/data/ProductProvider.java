@@ -93,30 +93,8 @@ public class ProductProvider extends ContentProvider {
     }
 
     private Uri insertProduct(Uri uri, ContentValues contentValues) {
-        String name = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Product requires a name");
-        }
-
-        Float price = contentValues.getAsFloat(ProductEntry.COLUMN_PRODUCT_PRICE);
-        if (price == null || price.isNaN() || price < 0) {
-            throw new IllegalArgumentException("Product requires a non-negative price");
-        }
-
-        Integer amount = contentValues.getAsInteger(ProductEntry.COLUMN_PRODUCT_AMOUNT);
-        if (amount == null || amount < 0) {
-            throw new IllegalArgumentException("Product requires a non-negative amount in stock");
-        }
-
-        String supplier = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
-        if (supplier == null || supplier.isEmpty()) {
-            throw new IllegalArgumentException("Product requires a supplier");
-        }
-
-        String image = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_IMAGE);
-        if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Product requires an image");
-        }
+        // Validate given contentValues
+        validateContentValues(contentValues);
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
@@ -132,6 +110,54 @@ public class ProductProvider extends ContentProvider {
         }
 
         return ContentUris.withAppendedId(uri, id);
+    }
+
+    private void validateContentValues(ContentValues contentValues) {
+        // Check for valid name
+        nameIsValid(contentValues);
+        // Check for valid price
+        priceIsValid(contentValues);
+        // Check for valid amount
+        amountIsValid(contentValues);
+        // Check for valid supplier
+        supplierIsValid(contentValues);
+        // Check for valid image name
+        imageIsValid(contentValues);
+    }
+
+    private void imageIsValid(ContentValues contentValues) {
+        String image = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_IMAGE);
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("Product requires an image");
+        }
+    }
+
+    private void supplierIsValid(ContentValues contentValues) {
+        String supplier = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
+        if (supplier == null || supplier.isEmpty()) {
+            throw new IllegalArgumentException("Product requires a supplier");
+        }
+    }
+
+    private void amountIsValid(ContentValues contentValues) {
+        Integer amount = contentValues.getAsInteger(ProductEntry.COLUMN_PRODUCT_AMOUNT);
+        if (amount == null || amount < 0) {
+            throw new IllegalArgumentException("Product requires a non-negative amount in stock");
+        }
+    }
+
+    private void priceIsValid(ContentValues contentValues) {
+        Float price = contentValues.getAsFloat(ProductEntry.COLUMN_PRODUCT_PRICE);
+        if (price == null || price.isNaN() || price < 0) {
+            throw new IllegalArgumentException("Product requires a non-negative price");
+        }
+    }
+
+    private void nameIsValid(ContentValues contentValues) {
+        String name = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Product requires a name");
+        }
     }
 
     @Override
@@ -159,6 +185,42 @@ public class ProductProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        // If there are no values to update, bail out early
+        if (contentValues == null || contentValues.size() == 0) {
+            return 0;
+        }
+
+        /* Check for each possible value if it is contained and valid */
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_NAME)) {
+            nameIsValid(contentValues);
+        }
+
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_PRICE)) {
+            priceIsValid(contentValues);
+        }
+
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_AMOUNT)) {
+            amountIsValid(contentValues);
+        }
+
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER)) {
+            supplierIsValid(contentValues);
+        }
+
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_IMAGE)) {
+            imageIsValid(contentValues);
+        }
+
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        int numberOfRows = database.update(ProductEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+
+        if (numberOfRows > 0) {
+            if (getContext() != null) {
+                getContext().getContentResolver().notifyChange(uri, null);
+            }
+        }
+
+        return numberOfRows;
     }
 }
