@@ -7,4 +7,8 @@
     <string name="button_sale_title">Sale</string>
     <string name="price_label">Price:</string>
     <string name="toast_product_sold">No product left for sale.</string>
+    <string name="editor_activity_title_add_product">Add a Product</string>
+    <string name="editor_activity_title_edit_product">Edit Product</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
 </resources>
