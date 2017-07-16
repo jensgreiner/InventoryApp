@@ -1,5 +1,6 @@
 package com.greiner_co.inventoryapp;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
@@ -16,10 +17,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -52,6 +55,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mNameEditText;
     private EditText mPriceEditText;
     private EditText mSupplierEditText;
+    private EditText mSupplierPhoneEditText;
+    private EditText mSupplierEmailEditText;
     private TextView mQuantityTextView;
     private int mQuantity = 0;
     private EditText mModifierEditText;
@@ -84,6 +89,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mNameEditText = (EditText) findViewById(R.id.edit_text_name);
         mPriceEditText = (EditText) findViewById(R.id.edit_text_price);
         mSupplierEditText = (EditText) findViewById(R.id.edit_text_supplier);
+        mSupplierPhoneEditText = (EditText) findViewById(R.id.edit_text_supplier_phone);
+        mSupplierEmailEditText = (EditText) findViewById(R.id.edit_text_supplier_email);
         mQuantityTextView = (TextView) findViewById(R.id.text_view_quantity);
         mModifierEditText = (EditText) findViewById(R.id.edit_text_modifier);
         mImageView = (ImageView) findViewById(R.id.product_image);
@@ -92,6 +99,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mNameEditText.setOnTouchListener(mTouchListener);
         mPriceEditText.setOnTouchListener(mTouchListener);
         mSupplierEditText.setOnTouchListener(mTouchListener);
+        mSupplierPhoneEditText.setOnTouchListener(mTouchListener);
+        mSupplierEmailEditText.setOnTouchListener(mTouchListener);
         mQuantityTextView.setOnTouchListener(mTouchListener);
         mImageView.setOnTouchListener(mTouchListener);
 
@@ -111,6 +120,46 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             }
         });
 
+        Button mButtonOrderMore = (Button) findViewById(R.id.button_order_more);
+        mButtonOrderMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean phoneIsValid;
+                boolean emailIsValid;
+                final String phoneNumber = mSupplierPhoneEditText.getText().toString().trim();
+                final String emailAddress = mSupplierEmailEditText.getText().toString().trim();
+                phoneIsValid = (TextUtils.isEmpty(phoneNumber) || (!Patterns.PHONE.matcher(phoneNumber).matches()));
+                emailIsValid = (TextUtils.isEmpty(emailAddress) || (!Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()));
+                final String productName = mNameEditText.getText().toString().trim();
+
+                if (phoneIsValid && emailIsValid) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(EditorActivity.this);
+                    builder.setMessage(R.string.order_dialog_msg);
+                    builder.setPositiveButton(R.string.phone, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked the "Phone" button, so phone the supplier.
+                            phoneSupplier(phoneNumber);
+                        }
+                    });
+                    builder.setNegativeButton(R.string.email, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked the "Email" button, so email the supplier.
+                            if (dialog != null) {
+                                emailSupplier(emailAddress, productName);
+                            }
+                        }
+                    });
+
+                    // Create and show the AlertDialog
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                } else if (phoneIsValid) {
+                    phoneSupplier(phoneNumber);
+                } else if (emailIsValid) {
+                    emailSupplier(emailAddress, productName);
+                }
+            }
+        });
 
         Button mQuantityPlus = (Button) findViewById(R.id.button_quantity_plus);
         mQuantityPlus.setOnClickListener(new View.OnClickListener() {
@@ -164,14 +213,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Called to enter a new product
             setTitle(R.string.editor_activity_title_add_product);
             mQuantityTextView.setText(String.valueOf(mQuantity));
-            /*
-            //mImageUri = Uri.parse("android.resource://com.greiner_co.inventoryapp/drawable/default_image");
-            mImageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
-                    "://" + getResources().getResourcePackageName(R.drawable.default_image)
-                    + '/' + getResources().getResourceTypeName(R.drawable.default_image) + '/' + getResources().getResourceEntryName(R.drawable.default_image) );
-            Log.d(LOG_TAG, "OnCreate Image URI: " + mImageUri);
-            mImageView.setImageBitmap(getBitmapFromUri(mImageUri));
-            */
             mImageView.setImageResource(R.drawable.default_image);
         } else {
             // Called with an existing product to edit
@@ -185,7 +226,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
-            case SELECT_PHOTO: {
+            case SELECT_PHOTO:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -200,11 +241,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     // functionality that depends on this permission.
                     Toast.makeText(this, "No Photo Permission", Toast.LENGTH_SHORT).show();
                 }
-            }
+                break;
+            case 0:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(LOG_TAG, "Yay, phone permission granted.");
 
-            // other 'case' lines to check for other
-            // permissions this app might request
+                } else {
+                    Toast.makeText(this, "No Phone Permission", Toast.LENGTH_SHORT).show();
+                }
         }
+
+        // other 'case' lines to check for other
+        // permissions this app might request
     }
 
     @Override
@@ -490,7 +538,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         builder.setMessage(R.string.delete_dialog_msg);
         builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Delete" button, so delete the pet.
+                // User clicked the "Delete" button, so delete the product.
                 deleteProduct();
                 finish();
             }
@@ -498,7 +546,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Cancel" button, so dismiss the dialog
-                // and continue editing the pet.
+                // and continue editing the product.
                 if (dialog != null) {
                     dialog.dismiss();
                 }
@@ -531,7 +579,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Keep editing" button, so dismiss the dialog
-                // and continue editing the pet.
+                // and continue editing the product.
                 if (dialog != null) {
                     dialog.dismiss();
                 }
@@ -591,5 +639,35 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mQuantityTextView.setText("");
         mSupplierEditText.getText().clear();
         mImageView.setImageResource(R.drawable.default_image);
+    }
+
+    private void phoneSupplier(String phoneNumber) {
+        Intent callIntent = new Intent(Intent.ACTION_CALL);
+        callIntent.setData(Uri.parse("tel:" + phoneNumber));
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 0);
+            return;
+        }
+        startActivity(callIntent);
+    }
+
+    private void emailSupplier(String emailAddress, String productName) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("message/rfc822");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{emailAddress});
+        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject_prefix) + " " + productName);
+
+        try {
+            startActivity(Intent.createChooser(intent, getString(R.string.email_intent_title)));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(EditorActivity.this, getString(R.string.toast_no_email_clients), Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -34,4 +34,10 @@
     <string name="something_wrong_error">Something went wrong.</string>
     <string name="action_select_picture">Select Picture</string>
     <string name="exception_image_load_failed">Failed to load image</string>
+    <string name="phone">Phone</string>
+    <string name="email">Email</string>
+    <string name="order_dialog_msg">Order more via?</string>
+    <string name="email_subject_prefix">Order more of</string>
+    <string name="email_intent_title">Send mail...</string>
+    <string name="toast_no_email_clients">There are no email clients installed.</string>
 </resources>
