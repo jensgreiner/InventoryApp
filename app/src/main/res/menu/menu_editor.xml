@@ -6,13 +6,13 @@
 
     <item
         android:id="@+id/action_save"
-        android:icon="@drawable/action_done"
+        android:icon="@drawable/action_done_black"
         android:title="@string/action_save"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_delete"
-        android:icon="@drawable/action_trash_can"
+        android:icon="@drawable/action_trash_can_black"
         android:title="@string/action_delete"
         app:showAsAction="ifRoom" />
 </menu>
