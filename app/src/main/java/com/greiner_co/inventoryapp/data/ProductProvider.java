@@ -121,8 +121,26 @@ public class ProductProvider extends ContentProvider {
         quantityIsValid(contentValues);
         // Check for valid supplier
         supplierIsValid(contentValues);
+        // Check for valid supplier
+        supplierPhoneIsValid(contentValues);
+        // Check for valid supplier
+        supplierEmailIsValid(contentValues);
         // Check for valid image name
         imageIsValid(contentValues);
+    }
+
+    private void supplierEmailIsValid(ContentValues contentValues) {
+        String supplierEmail = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_SUPPLIER_EMAIL);
+        if (supplierEmail == null || supplierEmail.isEmpty()) {
+            throw new IllegalArgumentException("Product requires a supplier email address");
+        }
+    }
+
+    private void supplierPhoneIsValid(ContentValues contentValues) {
+        String supplierPhone = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE);
+        if (supplierPhone == null || supplierPhone.isEmpty()) {
+            throw new IllegalArgumentException("Product requires a supplier phone number");
+        }
     }
 
     private void imageIsValid(ContentValues contentValues) {
@@ -205,6 +223,14 @@ public class ProductProvider extends ContentProvider {
 
         if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER)) {
             supplierIsValid(contentValues);
+        }
+
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE)) {
+            supplierPhoneIsValid(contentValues);
+        }
+
+        if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_SUPPLIER_EMAIL)) {
+            supplierEmailIsValid(contentValues);
         }
 
         if (contentValues.containsKey(ProductEntry.COLUMN_PRODUCT_IMAGE)) {

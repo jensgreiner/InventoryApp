@@ -49,6 +49,12 @@ public final class ProductContract {
         // Supplier of the product (type: TEXT, NOT NULL)
         public static final String COLUMN_PRODUCT_SUPPLIER = "supplier";
 
+        // Supplier phone of the product (type: TEXT, NOT NULL)
+        public static final String COLUMN_PRODUCT_SUPPLIER_PHONE = "phone";
+
+        // Supplier email address of the product (type: TEXT, NOT NULL)
+        public static final String COLUMN_PRODUCT_SUPPLIER_EMAIL = "email";
+
         // Image of the product (type: TEXT, NOT NULL, DEFAULT "default_image"
         // @link https://stackoverflow.com/a/6606163/1469260
         public static final String COLUMN_PRODUCT_IMAGE = "image";

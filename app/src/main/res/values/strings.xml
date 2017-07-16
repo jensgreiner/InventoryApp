@@ -40,4 +40,6 @@
     <string name="email_subject_prefix">Order more of</string>
     <string name="email_intent_title">Send mail...</string>
     <string name="toast_no_email_clients">There are no email clients installed.</string>
+    <string name="save_phone_empty">Please enter a valid supplier phone number.</string>
+    <string name="save_email_empty">Please enter a valid supplier email address.</string>
 </resources>

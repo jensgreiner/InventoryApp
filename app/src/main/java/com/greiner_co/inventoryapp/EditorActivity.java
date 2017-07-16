@@ -124,15 +124,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mButtonOrderMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(LOG_TAG, "Order More Button clicked");
+
                 boolean phoneIsValid;
                 boolean emailIsValid;
                 final String phoneNumber = mSupplierPhoneEditText.getText().toString().trim();
                 final String emailAddress = mSupplierEmailEditText.getText().toString().trim();
-                phoneIsValid = (TextUtils.isEmpty(phoneNumber) || (!Patterns.PHONE.matcher(phoneNumber).matches()));
-                emailIsValid = (TextUtils.isEmpty(emailAddress) || (!Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()));
+                phoneIsValid = (!TextUtils.isEmpty(phoneNumber) && (Patterns.PHONE.matcher(phoneNumber).matches()));
+                emailIsValid = (!TextUtils.isEmpty(emailAddress) && (Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()));
                 final String productName = mNameEditText.getText().toString().trim();
 
                 if (phoneIsValid && emailIsValid) {
+                    Log.d(LOG_TAG, "phone & email valid");
                     AlertDialog.Builder builder = new AlertDialog.Builder(EditorActivity.this);
                     builder.setMessage(R.string.order_dialog_msg);
                     builder.setPositiveButton(R.string.phone, new DialogInterface.OnClickListener() {
@@ -154,9 +157,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
                 } else if (phoneIsValid) {
+                    Log.d(LOG_TAG, "only phone valid");
                     phoneSupplier(phoneNumber);
                 } else if (emailIsValid) {
+                    Log.d(LOG_TAG, "only email valid");
                     emailSupplier(emailAddress, productName);
+                } else {
+                    Log.d(LOG_TAG, "Email and phone invalid! " + emailAddress + " " + phoneNumber);
                 }
             }
         });
@@ -320,8 +327,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             return null;
 
         // Get the dimensions of the View
-        int targetW = mImageView.getWidth();
-        int targetH = mImageView.getHeight();
+        int targetW = 102; //mImageView.getWidth();
+        int targetH = 76;
+        mImageView.getHeight();
 
         InputStream input = null;
         try {
@@ -454,6 +462,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String priceString = mPriceEditText.getText().toString().trim();
         String quantityString = mQuantityTextView.getText().toString().trim();
         String supplierString = mSupplierEditText.getText().toString().trim();
+        String phoneString = mSupplierPhoneEditText.getText().toString().trim();
+        String emailString = mSupplierEmailEditText.getText().toString().trim();
 
         if (mCurrentProductUri == null) {
             if (TextUtils.isEmpty(nameString)) {
@@ -468,7 +478,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 Toast.makeText(this, getString(R.string.save_supplier_empty), Toast.LENGTH_SHORT).show();
                 return false;
             }
-
+            if (TextUtils.isEmpty(phoneString)) {
+                Toast.makeText(this, getString(R.string.save_phone_empty), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            if (TextUtils.isEmpty(emailString)) {
+                Toast.makeText(this, getString(R.string.save_email_empty), Toast.LENGTH_SHORT).show();
+                return false;
+            }
             if (mImageUri == null) {
                 Toast.makeText(this, getString(R.string.save_image_uri_empty), Toast.LENGTH_SHORT).show();
                 return false;
@@ -504,6 +521,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceValue);
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantityValue);
         values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER, supplierString);
+        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE, phoneString);
+        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_EMAIL, emailString);
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageUriValue);
 
         if (mCurrentProductUri == null) {
@@ -599,6 +618,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 ProductEntry.COLUMN_PRODUCT_PRICE,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
                 ProductEntry.COLUMN_PRODUCT_SUPPLIER,
+                ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE,
+                ProductEntry.COLUMN_PRODUCT_SUPPLIER_EMAIL,
                 ProductEntry.COLUMN_PRODUCT_IMAGE
         };
 
@@ -612,6 +633,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             int priceIndex = data.getColumnIndexOrThrow(ProductEntry.COLUMN_PRODUCT_PRICE);
             int quantityIndex = data.getColumnIndexOrThrow(ProductEntry.COLUMN_PRODUCT_QUANTITY);
             int supplierIndex = data.getColumnIndexOrThrow(ProductEntry.COLUMN_PRODUCT_SUPPLIER);
+            int phoneIndex = data.getColumnIndexOrThrow(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE);
+            int emailIndex = data.getColumnIndexOrThrow(ProductEntry.COLUMN_PRODUCT_SUPPLIER_EMAIL);
             int imageIndex = data.getColumnIndexOrThrow(ProductEntry.COLUMN_PRODUCT_IMAGE);
 
             mNameEditText.setText(data.getString(nameIndex));
@@ -619,6 +642,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             mQuantity = data.getInt(quantityIndex);
             mQuantityTextView.setText(String.valueOf(mQuantity));
             mSupplierEditText.setText(data.getString(supplierIndex));
+            mSupplierPhoneEditText.setText(data.getString(phoneIndex));
+            mSupplierEmailEditText.setText(data.getString(emailIndex));
             String imageName = data.getString(imageIndex);
             if (imageName == null || imageName.isEmpty()) {
                 mImageView.setImageResource(R.drawable.default_image);
@@ -638,11 +663,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mPriceEditText.getText().clear();
         mQuantityTextView.setText("");
         mSupplierEditText.getText().clear();
+        mSupplierPhoneEditText.getText().clear();
+        mSupplierEmailEditText.getText().clear();
         mImageView.setImageResource(R.drawable.default_image);
     }
 
     private void phoneSupplier(String phoneNumber) {
-        Intent callIntent = new Intent(Intent.ACTION_CALL);
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
         callIntent.setData(Uri.parse("tel:" + phoneNumber));
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -653,7 +680,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 0);
-            return;
+            Log.d(LOG_TAG, "Phone Permission not granted.");
         }
         startActivity(callIntent);
     }
