@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,6 +44,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mModifierEditText;
     private ImageView mImageView;
     private Uri mImageUri;
+    private Button mQuantityPlus;
+    private Button mQuantityMinus;
 
     /**
      * Boolean flag that keeps track of whether the product has been edited (true) or not (false)
@@ -88,6 +91,52 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 Toast.makeText(EditorActivity.this, "Image auswaehlen!", Toast.LENGTH_SHORT).show();
             }
         });
+
+        mQuantityPlus = (Button) findViewById(R.id.button_quantity_plus);
+        mQuantityPlus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String modifierString = mModifierEditText.getText().toString().trim();
+                int modifier;
+                if (modifierString.isEmpty()) {
+                    modifier = 1;
+                } else {
+                    try {
+                        modifier = Integer.parseInt(modifierString);
+                    } catch (NumberFormatException nfe) {
+                        Toast.makeText(EditorActivity.this, getString(R.string.modifier_format_exception), Toast.LENGTH_SHORT).show();
+                        modifier = 1;
+                    }
+                }
+                mQuantity += modifier;
+                mQuantityTextView.setText(String.valueOf(mQuantity));
+            }
+        });
+
+        mQuantityMinus = (Button) findViewById(R.id.button_quantity_minus);
+        mQuantityMinus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String modifierString = mModifierEditText.getText().toString().trim();
+                int modifier;
+                if (modifierString.isEmpty()) {
+                    modifier = 1;
+                } else {
+                    try {
+                        modifier = Integer.parseInt(modifierString);
+                    } catch (NumberFormatException nfe) {
+                        Toast.makeText(EditorActivity.this, getString(R.string.modifier_format_exception), Toast.LENGTH_SHORT).show();
+                        modifier = 1;
+                    }
+                }
+                mQuantity -= modifier;
+                if (mQuantity < 0) {
+                    mQuantity = 0;
+                }
+                mQuantityTextView.setText(String.valueOf(mQuantity));
+            }
+        });
+
 
         // Check whether this is an edit call or an add call
         mCurrentProductUri = getIntent().getData();
@@ -354,7 +403,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
             mNameEditText.setText(data.getString(nameIndex));
             mPriceEditText.setText(String.valueOf(data.getFloat(priceIndex)));
-            mQuantityTextView.setText(String.valueOf(data.getInt(quantityIndex)));
+            mQuantity = data.getInt(quantityIndex);
+            mQuantityTextView.setText(String.valueOf(mQuantity));
             mSupplierEditText.setText(data.getString(supplierIndex));
             String imageName = data.getString(imageIndex);
             if (imageName == null || imageName.isEmpty()) {
