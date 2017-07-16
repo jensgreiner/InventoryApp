@@ -239,7 +239,7 @@ public class ProductProvider extends ContentProvider {
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
-        int numberOfRows = 0;
+        int numberOfRows;
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case PRODUCTS:

@@ -1,6 +1,6 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Inventory App</string>
-    <string name="empty_subtitle_text">Add more products to the list...</string>
+    <string name="empty_subtitle_text" tools:ignore="TypographyEllipsis">Add more products to the list...</string>
     <string name="empty_title_text">Nothing to sell here.</string>
     <string name="action_insert_dummy_data">Insert Dummy Data</string>
     <string name="action_delete_all_products">Delete All Products</string>
@@ -38,8 +38,21 @@
     <string name="email">Email</string>
     <string name="order_dialog_msg">Order more via?</string>
     <string name="email_subject_prefix">Order more of</string>
-    <string name="email_intent_title">Send mail...</string>
+    <string name="email_intent_title" tools:ignore="TypographyEllipsis">Send mail...</string>
     <string name="toast_no_email_clients">There are no email clients installed.</string>
     <string name="save_phone_empty">Please enter a valid supplier phone number.</string>
     <string name="save_email_empty">Please enter a valid supplier email address.</string>
+    <string name="product_image_description">product image</string>
+    <string name="price_label_text">Price in $</string>
+    <string name="edit_text_price_hint">0.00</string>
+    <string name="supplier_label_title">Supplier</string>
+    <string name="phone_label_title">Phone</string>
+    <string name="email_label_title">Email</string>
+    <string name="quantity_label_title">Quantity</string>
+    <string name="modify_label_title">Modify Quantity by</string>
+    <string name="edit_text_modifier_hint">1</string>
+    <string name="button_title_plus">+</string>
+    <string name="button_minus_title">-</string>
+    <string name="button_order_more_title">Order More</string>
+    <string name="empty_list_image_description">empty list image</string>
 </resources>
