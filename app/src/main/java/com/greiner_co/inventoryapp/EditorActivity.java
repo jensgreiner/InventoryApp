@@ -5,10 +5,16 @@ import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -25,6 +32,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.greiner_co.inventoryapp.data.ProductContract.ProductEntry;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Allows the user to create a new product or edit an existing one.
@@ -34,6 +45,8 @@ import com.greiner_co.inventoryapp.data.ProductContract.ProductEntry;
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = EditorActivity.class.getSimpleName();
     private static final int EXISTING_PRODUCT_LOADER = 0;
+    private static final String STATE_IMAGE_URI = "STATE_IMAGE_URI";
+    private final static int SELECT_PHOTO = 200;
 
     private Uri mCurrentProductUri;
     private EditText mNameEditText;
@@ -44,8 +57,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mModifierEditText;
     private ImageView mImageView;
     private Uri mImageUri;
-    private Button mQuantityPlus;
-    private Button mQuantityMinus;
 
     /**
      * Boolean flag that keeps track of whether the product has been edited (true) or not (false)
@@ -87,12 +98,21 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: add image handler
-                Toast.makeText(EditorActivity.this, "Image auswaehlen!", Toast.LENGTH_SHORT).show();
+                Intent intent;
+
+                if (Build.VERSION.SDK_INT < 19) {
+                    intent = new Intent(Intent.ACTION_GET_CONTENT);
+                } else {
+                    intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                }
+                intent.setType("image/*");
+                startActivityForResult(Intent.createChooser(intent, getString(R.string.action_select_picture)), SELECT_PHOTO);
             }
         });
 
-        mQuantityPlus = (Button) findViewById(R.id.button_quantity_plus);
+
+        Button mQuantityPlus = (Button) findViewById(R.id.button_quantity_plus);
         mQuantityPlus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,7 +133,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             }
         });
 
-        mQuantityMinus = (Button) findViewById(R.id.button_quantity_minus);
+        Button mQuantityMinus = (Button) findViewById(R.id.button_quantity_minus);
         mQuantityMinus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -144,12 +164,161 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Called to enter a new product
             setTitle(R.string.editor_activity_title_add_product);
             mQuantityTextView.setText(String.valueOf(mQuantity));
+            /*
+            //mImageUri = Uri.parse("android.resource://com.greiner_co.inventoryapp/drawable/default_image");
+            mImageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
+                    "://" + getResources().getResourcePackageName(R.drawable.default_image)
+                    + '/' + getResources().getResourceTypeName(R.drawable.default_image) + '/' + getResources().getResourceEntryName(R.drawable.default_image) );
+            Log.d(LOG_TAG, "OnCreate Image URI: " + mImageUri);
+            mImageView.setImageBitmap(getBitmapFromUri(mImageUri));
+            */
             mImageView.setImageResource(R.drawable.default_image);
         } else {
             // Called with an existing product to edit
             setTitle(R.string.editor_activity_title_edit_product);
 
             getLoaderManager().initLoader(EXISTING_PRODUCT_LOADER, null, this);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case SELECT_PHOTO: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // photo-related task you need to do.
+                    Log.d(LOG_TAG, "Yay, permission granted.");
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(this, "No Photo Permission", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK && data != null) {
+            mImageUri = data.getData();
+            int takeFlags = data.getFlags();
+            takeFlags &= (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    getContentResolver().takePersistableUriPermission(mImageUri, takeFlags);
+                }
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+            mImageView.setImageBitmap(getBitmapFromUri(mImageUri));
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (mImageUri != null) {
+            outState.putString(STATE_IMAGE_URI, mImageUri.toString());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if (savedInstanceState.containsKey(STATE_IMAGE_URI)) {
+            String stateImageUri = savedInstanceState.getString(STATE_IMAGE_URI);
+            if (stateImageUri != null && !stateImageUri.isEmpty()) {
+                mImageUri = Uri.parse(savedInstanceState.getString(STATE_IMAGE_URI));
+
+                ViewTreeObserver viewTreeObserver = mImageView.getViewTreeObserver();
+                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            mImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                        mImageView.setImageBitmap(getBitmapFromUri(mImageUri));
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * Method to display the image
+     * Credit => Used function from https://github.com/crlsndrsjmnz/MyShareImageExample
+     * as was recommended as best practice for image display by forum mentor
+     *
+     * @param uri - image path
+     * @return Bitmap
+     */
+    public Bitmap getBitmapFromUri(Uri uri) {
+
+        if (uri == null || uri.toString().isEmpty())
+            return null;
+
+        // Get the dimensions of the View
+        int targetW = mImageView.getWidth();
+        int targetH = mImageView.getHeight();
+
+        InputStream input = null;
+        try {
+            input = this.getContentResolver().openInputStream(uri);
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(input, null, bmOptions);
+            if (input != null) {
+                input.close();
+            }
+
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+            Log.d(LOG_TAG, "photoW: " + photoW + " PhotoH: " + photoH + " targetW: " + targetW + " targetH: " + targetH);
+            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+
+            input = this.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bmOptions);
+            if (input != null) {
+                input.close();
+            }
+            return bitmap;
+
+        } catch (FileNotFoundException fne) {
+            Log.e(LOG_TAG, getString(R.string.exception_image_load_failed), fne);
+            return null;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, getString(R.string.exception_image_load_failed), e);
+            return null;
+        } finally {
+            try {
+                if (input != null) {
+                    input.close();
+                }
+            } catch (IOException ioe) {
+                Log.d(LOG_TAG, "IOException: " + ioe);
+            }
         }
     }
 
@@ -251,12 +420,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 Toast.makeText(this, getString(R.string.save_supplier_empty), Toast.LENGTH_SHORT).show();
                 return false;
             }
-            /*
+
             if (mImageUri == null) {
                 Toast.makeText(this, getString(R.string.save_image_uri_empty), Toast.LENGTH_SHORT).show();
                 return false;
             }
-            */
+
         }
 
         float priceValue;
@@ -274,16 +443,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             return false;
         }
 
-
-        String imageUriValue = "default_image";
-        /* TODO
+        String imageUriValue;
         if (mImageUri == null) {
             Toast.makeText(this, getString(R.string.save_image_uri_empty), Toast.LENGTH_SHORT).show();
             return false;
         } else {
             imageUriValue = mImageUri.toString();
         }
-        */
 
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
@@ -342,7 +508,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
-        return;
     }
 
     private void deleteProduct() {
@@ -410,8 +575,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             if (imageName == null || imageName.isEmpty()) {
                 mImageView.setImageResource(R.drawable.default_image);
             } else {
-                //TODO: handle image resource
-                //mImageView.setImageURI(...);
+                mImageUri = Uri.parse(data.getString(imageIndex));
+                if (mImageUri != null) {
+                    mImageView.setImageBitmap(getBitmapFromUri(mImageUri));
+                }
             }
         }
 

@@ -30,4 +30,8 @@
     <string name="discard">Discard</string>
     <string name="keep_editing">Keep Editing</string>
     <string name="modifier_format_exception">Invalid modifier format.</string>
+    <string name="no_image_picked">You haven\'t picked image.</string>
+    <string name="something_wrong_error">Something went wrong.</string>
+    <string name="action_select_picture">Select Picture</string>
+    <string name="exception_image_load_failed">Failed to load image</string>
 </resources>
