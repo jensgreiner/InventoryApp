@@ -12,4 +12,21 @@
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
     <string name="edit_text_product_name_hint">Product Name</string>
+    <string name="save_name_empty">Please enter a valid product name.</string>
+    <string name="save_price_empty">Please enter a valid price.</string>
+    <string name="save_supplier_empty">Please enter a valid supplier name.</string>
+    <string name="save_image_uri_empty">Please add a product image.</string>
+    <string name="save_quantity_format_exception">Please enter a valid quantity.</string>
+    <string name="save_error_new_product">Error with saving product.</string>
+    <string name="product_saved">Product saved.</string>
+    <string name="product_updated">Product updated.</string>
+    <string name="error_updating_product">Error with updating product.</string>
+    <string name="delete_dialog_msg">Delete this product?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="error_deleting">Error with deleting product.</string>
+    <string name="product_deleted">Product deleted.</string>
+    <string name="unsaved_changes_dialog_msg">Discard your changes and quit editing?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
 </resources>
