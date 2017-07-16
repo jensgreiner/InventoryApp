@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.greiner_co.inventoryapp">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"
@@ -25,6 +27,7 @@
             android:name=".EditorActivity"
             android:parentActivityName=".InventoryActivity"
             android:theme="@style/EditorTheme"
+            android:windowSoftInputMode="stateHidden"
             tools:targetApi="jelly_bean">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
