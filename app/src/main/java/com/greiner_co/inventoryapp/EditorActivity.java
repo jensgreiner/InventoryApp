@@ -186,6 +186,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 }
                 mQuantity += modifier;
                 mQuantityTextView.setText(String.valueOf(mQuantity));
+                mProductHasChanged = true;
             }
         });
 
@@ -210,6 +211,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     mQuantity = 0;
                 }
                 mQuantityTextView.setText(String.valueOf(mQuantity));
+                mProductHasChanged = true;
             }
         });
 
