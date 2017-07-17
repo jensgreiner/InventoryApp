@@ -55,4 +55,6 @@
     <string name="button_minus_title">-</string>
     <string name="button_order_more_title">Order More</string>
     <string name="empty_list_image_description">empty list image</string>
+    <string name="save_quantity_empty">Please enter a valid quantity.</string>
+    <string name="quantity_placeholder">n/a</string>
 </resources>

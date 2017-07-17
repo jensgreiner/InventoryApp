@@ -221,7 +221,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (mCurrentProductUri == null) {
             // Called to enter a new product
             setTitle(R.string.editor_activity_title_add_product);
-            mQuantityTextView.setText(String.valueOf(mQuantity));
+            mQuantityTextView.setText(R.string.quantity_placeholder);
             mImageView.setImageResource(R.drawable.default_image);
         } else {
             // Called with an existing product to edit
@@ -476,6 +476,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 Toast.makeText(this, getString(R.string.save_price_empty), Toast.LENGTH_SHORT).show();
                 return false;
             }
+            if (TextUtils.isEmpty(quantityString)) {
+                Toast.makeText(this, getString(R.string.save_quantity_empty), Toast.LENGTH_SHORT).show();
+                return false;
+            }
             if (TextUtils.isEmpty(supplierString)) {
                 Toast.makeText(this, getString(R.string.save_supplier_empty), Toast.LENGTH_SHORT).show();
                 return false;
@@ -663,7 +667,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public void onLoaderReset(Loader<Cursor> loader) {
         mNameEditText.getText().clear();
         mPriceEditText.getText().clear();
-        mQuantityTextView.setText("");
+        mQuantityTextView.setText(R.string.quantity_placeholder);
         mSupplierEditText.getText().clear();
         mSupplierPhoneEditText.getText().clear();
         mSupplierEmailEditText.getText().clear();
